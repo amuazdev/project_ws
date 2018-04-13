@@ -1,0 +1,80 @@
+<launch>
+ <!-- Turtlesim Node-->
+  <!--<node pkg="turtlesim" type="turtlesim_node" name="sim"/>-->
+  
+ 
+ <!-- joy node -->
+  <node respawn="true" pkg="joy"
+        type="joy_node" name="input_joy" >
+    <param name="dev" type="string" value="/dev/input/js0" />
+    <param name="deadzone" value="0.12" />
+  </node>
+ <!-- Axes -->
+  <param name="axis_linear" value="1" type="int"/>
+  <param name="axis_angular" value="0" type="int"/>
+  <param name="scale_linear" value="2" type="double"/>
+  <param name="scale_angular" value="2" type="double"/>
+
+  <node pkg="mobile_base" type="teleopJoy" name="teleop"/>
+ 
+  <node name="arduino" pkg="rosserial_python" type="serial_node.py">
+    <param name="port" type="string" value="/dev/ttyUSB1"/> 
+  </node>
+
+ <!-- laser hokuyo node -->
+	<node name="urg" pkg="urg_node" type="urg_node" respawn="false" output="screen">
+    <!--<arg name="frame_id" default="horizontal_laser_link" doc="frame id of the Laser URG"/>-->
+    <param name="frame_id" value="horizontal_laser_link"/>
+    <!-- Starts up faster, but timestamps will be inaccurate. --> 
+    <param name="calibrate_time" type="bool" value="true"/> 
+    <!-- Set the port to connect to here -->
+    <param name="port" type="string" value="/dev/ttyACM0"/> 
+    <param name="intensity" type="bool" value="false"/>
+  </node>
+  
+
+ <!-- imu xsens driver node -->
+  <!-- parameters -->
+    <arg name="device" default="auto" doc="device file of the IMU"/>
+    <arg name="baudrate" default="0" doc="baudrate of the IMU"/>
+    <arg name="timeout" default="0.002" doc="timeout for the IMU communication"/>
+    <arg name="frame_id" default="imu_link" doc="frame id of the IMU"/>
+    <arg name="frame_local" default="ENU" doc="desired frame orientation (ENU, NED or NWU)"/>
+    <arg name="no_rotation_duration" default="0" doc="duration (int in seconds) of the no-rotation calibration procedure"/>
+
+ <!-- node -->
+	<node pkg="xsens_driver" type="mtnode.py" name="xsens_driver" >
+		<param name="device" value="$(arg device)"/>
+		<param name="baudrate" value="$(arg baudrate)"/>
+		<param name="timeout" value="$(arg timeout)"/>
+		<param name="frame_id" value="$(arg frame_id)"/>
+		<param name="frame_local" value="$(arg frame_local)"/>
+		<param name="no_rotation_duration" value="$(arg no_rotation_duration)"/>
+	</node>
+
+ <!-- cartographer node -->
+  <param name="robot_description"
+    textfile="$(find cartographer_ros)/urdf/backpack_2d.urdf" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher"
+    type="robot_state_publisher" />
+
+  <node name="cartographer_node" pkg="cartographer_ros"
+      type="cartographer_node" args="
+          -configuration_directory $(find cartographer_ros)/configuration_files
+          -configuration_basename robot_base.lua"
+      output="screen">
+    <remap from="echoes" to="/scan" />
+    <remap from="imu" to="/imu/data1" />
+				
+		
+  </node>
+
+  <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
+      type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
+
+
+
+
+
+</launch>

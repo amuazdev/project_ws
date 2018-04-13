@@ -1,0 +1,21 @@
+
+
+rightWheelDistance = (rightEncoderCounter / cpr) * wheelDiameter * PI
+leftWheelDistance = (leftEncoderCounter / cpr) * wheelDiameter * PI
+
+dTheta = (rightWheelDistance - leftWheelDistance) / wheelBase
+vTheta = dTheta / (millis() - lastTime) * 1000
+theta += dTheta
+
+meanWheelDistance = (rightWheelDistance + leftWheelDistance) / 2
+x = meanWheelDistance * cos(dTheta)
+y = meanWheelDistance * sin(dTheta)
+
+vx = x / (millis() - lastTime) * 1000
+vy = y / (millis() - lastTime) * 1000
+
+rightEncoderCounter = 0
+leftEncoderCounter = 0
+
+lastTime = millis()
+

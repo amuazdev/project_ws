@@ -1,0 +1,8 @@
+prefix=/home/amz/fyp_ws/devel
+
+Name: mobile_base
+Description: Description of mobile_base
+Version: 0.0.0
+Cflags: -I/home/amz/fyp_ws/devel/include
+Libs: -L/home/amz/fyp_ws/devel/lib 
+Requires: message_runtime
